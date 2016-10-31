@@ -1,0 +1,8 @@
+## Interface: 70000
+## Title: StyleMeter_Lolzen
+## Author: Lolzen
+## Notes: Example layout for StyleMeter
+## Version: 0.0.1 Alpha
+## Dependencies: StyleMeter
+
+layout.lua

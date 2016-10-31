@@ -1,0 +1,1 @@
+My prsonal layout for StyleMeter which may act as a future reference design once cleaned up and simpified. WIP
