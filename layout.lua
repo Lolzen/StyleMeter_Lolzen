@@ -11,7 +11,7 @@ end
 
 local Lolzen = CreateFrame("Frame")
 Lolzen:SetSize(250, 90)
-Lolzen:SetPoint("CENTER", UIParent, "CENTER") --CHANGE LATER
+Lolzen:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -100, 16) --CHANGE LATER
 
 Lolzen:EnableMouse(true)
 Lolzen:SetMovable(true)
@@ -103,6 +103,7 @@ for k, v in pairs(modulenames) do
 	-- Backgrond
 	if not tabs[k].bg then
 		tabs[k].bg = tabs[k]:CreateTexture("Background")
+		tabs[k].bg:SetTexture("Interface\\Buttons\\WHITE8x8")
 		tabs[k].bg:SetAllPoints(tabs[k])
 	end
 	-- Labels
@@ -194,7 +195,6 @@ end
 function Lolzen:UpdateDisplay()
 	for i=1, 5, 1 do
 		if i == 1 then
-			--if StyleMeter.moduleDBtotal[activeModule] and StyleMeter.moduleDBtotal[activeModule] > 0 then
 			if StyleMeter.moduleDBtotal[activeModule] and StyleMeter.moduleDBtotal[activeModule] > 0 then
 				local curModeVal = StyleMeter.moduleDB[activeModule][StyleMeter.guidDB.rank[viewrange]] or 0
 				if curModeVal and curModeVal > 0 then
@@ -207,9 +207,8 @@ function Lolzen:UpdateDisplay()
 					-- Strings
 					local rcColor
 					for _, guid in pairs(StyleMeter.guidDB.players) do
-						rcColor = guid.classcolor
+						rcColor = guid.classcolor or {r = 0.3, g = 0.3, b = 0.3}
 					end
-				--local curModeVal = StyleMeter.moduleDB[activeModule][StyleMeter.guidDB.rank[viewrange]] or 0
 					sb[i].string2:SetFormattedText("%d (%.0f%%)", curModeVal, curModeVal / StyleMeter.moduleDBtotal[activeModule] * 100)
 					sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange, rcColor.r*255, rcColor.g*255, rcColor.b*255, StyleMeter.guidDB.rank[viewrange])
 					sb[i].border:Show()
@@ -225,8 +224,6 @@ function Lolzen:UpdateDisplay()
 				sb[i].bg:Hide()
 			end
 		else
---			if ns.modeData[ns.guidDB.rank[ns.viewrange + i - 1]] and ns.modeTotal > 0 then
-			--if StyleMeter.moduleDB[activeModule[StyleMeter.guidDB.rank[viewrange + i - 1]]] and StyleMeter.moduleDBtotal[activeModule] > 0 then
 			if StyleMeter.moduleDBtotal[activeModule] and StyleMeter.moduleDBtotal[activeModule] > 0 then
 			local curModeVal = StyleMeter.moduleDB[activeModule][StyleMeter.guidDB.rank[viewrange + i - 1]] or 0
 				if curModeVal and curModeVal > 0 then
@@ -241,10 +238,8 @@ function Lolzen:UpdateDisplay()
 					for _, guid in pairs(StyleMeter.guidDB.players) do
 						rcColor = guid.classcolor  or {r = 0.3, g = 0.3, b = 0.3}
 					end
-				--	local curModeVal = ns.modeData[ns.guidDB.rank[ns.viewrange + i - 1]] or 0
-					--local curModeVal = StyleMeter.moduleDB[activeModule][StyleMeter.guidDB.rank[viewrange + i - 1]] or 0
 					sb[i].string2:SetFormattedText("%d (%.0f%%)", curModeVal, curModeVal / StyleMeter.moduleDBtotal[activeModule] * 100)
-	--				sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, rcColor.r*255, rcColor.g*255, rcColor.b*255, StyleMeter.guidDB.rank[viewrange + i - 1])
+					sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, rcColor.r*255, rcColor.g*255, rcColor.b*255, StyleMeter.guidDB.rank[viewrange + i - 1])
 					sb[i].border:Show()
 					sb[i].bg:Show()
 				end
@@ -281,13 +276,13 @@ function switchMode(mode)
 		activeModule = mode
 	end
 
---	for k, v in pairs(ns.modes) do
---		if v == ns.activeMode then
---			ns.tabs[k].bg:SetTexture(0.5, 0, 0, 0.5)
---		else
---			ns.tabs[k].bg:SetTexture(0, 0, 0, 0.5)
---		end
---	end
+	for k, v in pairs(modulenames) do
+		if v == activeModule then
+			tabs[k].bg:SetVertexColor(0.5, 0, 0, 0.5)
+		else
+			tabs[k].bg:SetVertexColor(0, 0, 0, 0.5)
+		end
+	end
 	
 	-- Sort Statusbars by active mode, so they aren't getting displayed funny
 --		sort(StyleMeter.guidDB.rank, StyleMeter.sortByModule(activeModule))
