@@ -209,6 +209,9 @@ for i=1, 5, 1 do
 			end
 		end
 	end)
+	sb[i]:SetScript("OnMouseUp", function()
+		Lolzen:StopMovingOrSizing()
+	end)
 end
 
 local siValue = function(val)
