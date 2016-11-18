@@ -37,7 +37,7 @@ Lolzen:SetScript("OnMouseWheel", function(self, direction)
 				viewrange = viewrange - 1
 			end
 		elseif direction == -1 then -- "down"
-			if viewrange < 20 then
+			if viewrange < 21 then
 				viewrange = viewrange + 1
 			end
 		end
@@ -279,7 +279,7 @@ function StyleMeter.UpdateLayout()
 					--sb[i].content1 = name
 					StyleMeter.DB.rank[viewrange + i - 1],
 					--sb[i].content2 = class
-					select(1, UnitClass(StyleMeter.DB.rank[viewrange + i - 1])),
+					StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].class,
 					--sb[i].content3 = value dependent on StyleMeter.activeModule
 					tostring(curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)"),
 					--sb[i].content4 = <module>/per second
@@ -292,9 +292,18 @@ function StyleMeter.UpdateLayout()
 				sb[i]:SetValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] or 0)
 				-- Strings
 				sb[i].string2:SetFormattedText("%s (%.0f%%)", siValue(curModeVal), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100)
-				sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, RAID_CLASS_COLORS[select(2, UnitClass(StyleMeter.DB.rank[viewrange + i - 1]))].r*255 or 0.3, RAID_CLASS_COLORS[select(2, UnitClass(StyleMeter.DB.rank[viewrange + i - 1]))].g*255 or 0.3, RAID_CLASS_COLORS[select(2, UnitClass(StyleMeter.DB.rank[viewrange + i - 1]))].b*255 or 0.3, StyleMeter.DB.rank[viewrange + i - 1])
+				sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.r*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.g*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.b*255, StyleMeter.DB.rank[viewrange + i - 1])
 				sb[i].border:Show()
 				sb[i].bg:Show()
+			else
+				if sb[i]:GetAlpha() == 1 then
+					sb[i]:SetAlpha(0)
+					sb[i].string1:SetText(nil)
+					sb[i].string2:SetText(nil)
+					sb[i].border:Hide()
+					sb[i].bg:Hide()
+					sb[i].content = {}
+				end
 			end
 		else
 			if sb[i]:GetAlpha() == 1 then
