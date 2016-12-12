@@ -61,14 +61,10 @@ border:SetPoint("TOPLEFT", bg, -2, 1)
 border:SetPoint("BOTTOMRIGHT", bg, 2, -1)
 border:SetBackdropBorderColor(0.2, 0.2, 0.2)
 
--- Copy Modulenames into modulenames table, witth StyleMeter.modulepriority in mind
+-- Copy Modulenames into modulenames table, ordering them with their set priority
 local modulenames = {}
-local activated = {}
-for k, v in pairs(StyleMeter.datamodules) do
-	tinsert(modulenames, StyleMeter.modulepriority[k], k)
-	if v["activated"] == true then
-		activated[k] = true
-	end
+for k, v in pairs(StyleMeter.module) do
+	tinsert(modulenames, v.priority, k)
 end
 
 -- Create some clickable tabs
@@ -83,7 +79,6 @@ for k, v in pairs(modulenames) do
 			tabs[k]:SetPoint("TOP", tabs[k-1], "BOTTOM", 0, -3)
 		end
 		tabs[k]:SetSize(80, 12)
-	--	tabs[k]:SetAlpha(0.4)
 	end
 	-- Backgrond
 	if not tabs[k].bg then
@@ -96,11 +91,7 @@ for k, v in pairs(modulenames) do
 		tabs[k].label = tabs[k]:CreateFontString(nil, "OVERLAY")
 		tabs[k].label:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
 		tabs[k].label:SetPoint("CENTER", tabs[k], "CENTER", 0, 0)
-		if activated[v] == true then
-			tabs[k].label:SetFormattedText("%s", v)
-		else
-			tabs[k].label:SetFormattedText("|cff550000%s|r", v)
-		end
+		tabs[k].label:SetFormattedText("%s", v)
 	end
 	-- Border
 	if not tabs[k].border then
@@ -116,12 +107,8 @@ for k, v in pairs(modulenames) do
 	end
 	-- clickscript for switching
 	tabs[k]:SetScript("OnMouseDown", function(self, button)
-		if activated[v] == true then
-			switchMode(v)
-			StyleMeter.UpdateLayout()
-		else
-			print("|cff5599ffStyleMeter:|r Module for "..v.." deactivated. Check your config.lua")
-		end
+		switchMode(v)
+		StyleMeter.UpdateLayout()
 	end)
 end
 
@@ -269,7 +256,7 @@ end
 
 function StyleMeter.UpdateLogin()
 	-- update on login and select the module with priority 1
-	switchMode()
+	switchMode(modulenames[1])
 end
 
 function StyleMeter.UpdateLayout()
@@ -296,6 +283,7 @@ function StyleMeter.UpdateLayout()
 				-- Strings
 				sb[i].string2:SetFormattedText("%s (%.0f%%)", siValue(curModeVal), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100)
 				sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.r*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.g*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.b*255, StyleMeter.DB.rank[viewrange + i - 1])
+				--sb[i].string1:SetFormattedText("%d. %s", viewrange + i - 1, "|c"..StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolorStr..StyleMeter.DB.rank[viewrange + i - 1].."|r")
 				sb[i].border:Show()
 				sb[i].bg:Show()
 			else
