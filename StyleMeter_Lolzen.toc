@@ -1,4 +1,4 @@
-## Interface: 70000
+## Interface: 71000
 ## Title: StyleMeter_Lolzen
 ## Author: Lolzen
 ## Notes: Example layout for StyleMeter

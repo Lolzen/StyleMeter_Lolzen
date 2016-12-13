@@ -54,7 +54,7 @@ bg:SetAllPoints(Lolzen)
 -- Border
 local border = CreateFrame("Frame", nil, Lolzen)
 border:SetBackdrop({
-	edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\border3", edgeSize = 8,
+	edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\border", edgeSize = 8,
 	insets = {left = 4, right = 4, top = 4, bottom = 4},
 })
 border:SetPoint("TOPLEFT", bg, -2, 1)
@@ -80,12 +80,14 @@ for k, v in pairs(modulenames) do
 		end
 		tabs[k]:SetSize(80, 12)
 	end
+
 	-- Backgrond
 	if not tabs[k].bg then
 		tabs[k].bg = tabs[k]:CreateTexture("Background")
 		tabs[k].bg:SetTexture("Interface\\Buttons\\WHITE8x8")
 		tabs[k].bg:SetAllPoints(tabs[k])
 	end
+
 	-- Labels
 	if not tabs[k].label then
 		tabs[k].label = tabs[k]:CreateFontString(nil, "OVERLAY")
@@ -93,11 +95,12 @@ for k, v in pairs(modulenames) do
 		tabs[k].label:SetPoint("CENTER", tabs[k], "CENTER", 0, 0)
 		tabs[k].label:SetFormattedText("%s", v)
 	end
+
 	-- Border
 	if not tabs[k].border then
 		tabs[k].border = CreateFrame("Frame", nil, Lolzen)
 		tabs[k].border:SetBackdrop({
-			edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\border3", edgeSize = 8,
+			edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\border", edgeSize = 8,
 			insets = {left = 4, right = 4, top = 4, bottom = 4},
 		})
 		tabs[k].border:SetBackdropBorderColor(0.2, 0.2, 0.2)
@@ -105,6 +108,7 @@ for k, v in pairs(modulenames) do
 		tabs[k].border:SetPoint("BOTTOMRIGHT", tabs[k], 2, -1)
 		tabs[k].border:SetAlpha(1)
 	end
+
 	-- clickscript for switching
 	tabs[k]:SetScript("OnMouseDown", function(self, button)
 		switchMode(v)
@@ -127,12 +131,12 @@ for i=1, 5, 1 do
 			sb[i]:SetPoint("TOP", sb[i-1], "BOTTOM", 0, -2)
 		end
 	end
-	
+
 	-- Border
 	if not sb[i].border then
 		sb[i].border = CreateFrame("Frame", nil, sb[i])
 		sb[i].border:SetBackdrop({
-			edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\border3", edgeSize = 8,
+			edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\border", edgeSize = 8,
 			insets = {left = 4, right = 4, top = 4, bottom = 4},
 		})
 		sb[i].border:SetPoint("TOPLEFT", sb[i], -2, 1)
@@ -155,32 +159,40 @@ for i=1, 5, 1 do
 		sb[i].string1:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
 		sb[i].string1:SetPoint("TOPLEFT", sb[i], "TOPLEFT", 2, -2)
 	end
+
 	if not sb[i].string2 then
 		-- modevalue (modevalue%)
 		sb[i].string2 = sb[i]:CreateFontString(nil, "OVERLAY")
 		sb[i].string2:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
 		sb[i].string2:SetPoint("TOPRIGHT", sb[i], "TOPRIGHT", -2, -2)
 	end
-	
+
 	-- More details on hovering the Statusbars
 	if not sb[i].content then
 		sb[i].content = {}
 	end
-	
+
 	sb[i]:SetScript("OnEnter", function(self)
 		if sb[i].content[1] ~= nil then
 			GameTooltip:SetOwner(sb[i], "ANCHOR_TOPLEFT", 0, 0)
 			GameTooltip:AddDoubleLine(sb[i].content[1], sb[i].content[2], 1, 1, 1, 1, 1, 1)
-			GameTooltip:AddDoubleLine("total", sb[i].content[3] or "")
+			GameTooltip:AddDoubleLine("Total", sb[i].content[3] or "")
 			GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", sb[i].content[4])
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine("Spells/Abilities used", 1, 1, 1)
+			for k, v in pairs(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]) do
+				if k ~= "total" then
+					GameTooltip:AddDoubleLine(k, v..format(" (%.0f%%)", v / (StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]].total) * 100))
+				end
+			end
 			GameTooltip:Show()
 		end
 	end)
-	
+
 	sb[i]:SetScript("OnLeave", function() 
 		GameTooltip:Hide() 
 	end)
-	
+
 	-- Script for moving the frame and resetting data
 	-- duplicate, because we just want to click without precision; otherwise we'd have to click exactly on the "Lolzen" frame
 	sb[i]:SetScript("OnMouseDown", function(self, button)
@@ -233,12 +245,12 @@ function switchMode(mode)
 			tabs[k].bg:SetVertexColor(0, 0, 0, 0.5)
 		end
 	end
-	
+
 	-- Sort Statusbars by active mode, so they aren't getting displayed funny
 	if StyleMeter.moduleDB[StyleMeter.activeModule] then
 		sort(StyleMeter.DB.rank, StyleMeter.sortByModule)
 	end
-	
+
 	for i=1, 5, 1 do
 		if StyleMeter.activeModule == "Damage" or StyleMeter.activeModule == "Damage Taken" then
 			sb[i]:SetStatusBarColor(0.8, 0, 0)
@@ -261,9 +273,10 @@ end
 
 function StyleMeter.UpdateLayout()
 	for i=1, 5, 1 do
-		if StyleMeter.moduleDBtotal[StyleMeter.activeModule] and StyleMeter.moduleDBtotal[StyleMeter.activeModule] > 0 then
-			local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] or 0
+		if StyleMeter.moduleDBtotal[StyleMeter.activeModule] and StyleMeter.moduleDBtotal[StyleMeter.activeModule] > 0 and StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] then
+			local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]].total or 0
 			if curModeVal and curModeVal > 0 then
+				--sort(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]], StyleMeter.sortSpellsByValue)
 				--Statusbars
 				sb[i].content = {
 					--sb[i].content1 = name
@@ -273,17 +286,16 @@ function StyleMeter.UpdateLayout()
 					--sb[i].content3 = value dependent on StyleMeter.activeModule
 					tostring(curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)"),
 					--sb[i].content4 = <module>/per second
-					tostring(siValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] / StyleMeter.totalCombatTime))
+					tostring(siValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]].total / StyleMeter.totalCombatTime))
 				}
 				if sb[i]:GetAlpha() == 0 then
 					sb[i]:SetAlpha(1)
 				end
-				sb[i]:SetMinMaxValues(0, StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[1]] or 0)
-				sb[i]:SetValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] or 0)
+				sb[i]:SetMinMaxValues(0, StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[1]].total or 0)
+				sb[i]:SetValue(curModeVal)
 				-- Strings
 				sb[i].string2:SetFormattedText("%s (%.0f%%)", siValue(curModeVal), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100)
 				sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.r*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.g*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.b*255, StyleMeter.DB.rank[viewrange + i - 1])
-				--sb[i].string1:SetFormattedText("%d. %s", viewrange + i - 1, "|c"..StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolorStr..StyleMeter.DB.rank[viewrange + i - 1].."|r")
 				sb[i].border:Show()
 				sb[i].bg:Show()
 			else
@@ -307,7 +319,7 @@ function StyleMeter.UpdateLayout()
 			end
 		end
 	end
-	
+
 	-- Sort Statusbars by active mode, so they aren't getting displayed funny
 	if StyleMeter.moduleDB[StyleMeter.activeModule] then
 		sort(StyleMeter.DB.rank, StyleMeter.sortByModule)
