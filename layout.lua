@@ -2,8 +2,8 @@
 -- Sample layout: basic tabbed layout
 
 local Lolzen = CreateFrame("Frame")
-Lolzen:SetSize(250, 90)
-Lolzen:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -100, 16) --CHANGE LATER
+Lolzen:SetSize(250, 80)
+Lolzen:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -90, 16) --CHANGE LATER
 
 Lolzen:EnableMouse(true)
 Lolzen:SetMovable(true)
@@ -61,7 +61,7 @@ border:SetPoint("TOPLEFT", bg, -2, 1)
 border:SetPoint("BOTTOMRIGHT", bg, 2, -1)
 border:SetBackdropBorderColor(0.2, 0.2, 0.2)
 
--- Copy Modulenames into modulenames table, ordering them with their set priority
+-- Copy Modulenames into modulenames table, ordering them in their set priority
 local modulenames = {}
 for k, v in pairs(StyleMeter.module) do
 	tinsert(modulenames, v.priority, k)
@@ -197,7 +197,7 @@ for i=1, 5, 1 do
 			if button == "LeftButton" then
 				StyleMeter.resetData()
 				StyleMeter.UpdateLayout()
-				print("|cff5599ffStyleMeter:|r Data has been resetted.")
+				print("|cff5599ffStyleMeter:|r Data has been reset.")
 			end
 		end
 	end)
@@ -276,9 +276,10 @@ function StyleMeter.UpdateLayout()
 					--sb[i].content2 = class
 					StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].class,
 					--sb[i].content3 = value dependent on StyleMeter.activeModule
-					tostring(curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)"),
+					curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)",
 					--sb[i].content4 = <module>/per second
-					tostring(siValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] / StyleMeter.totalCombatTime))
+					--siValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] / StyleMeter.totalCombatTime)
+					siValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] / StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].combatTime)
 				}
 				if sb[i]:GetAlpha() == 0 then
 					sb[i]:SetAlpha(1)
