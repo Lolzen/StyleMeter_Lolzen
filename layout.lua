@@ -1,6 +1,16 @@
 --// Layout (Tabbed) //--
 -- Sample layout: basic tabbed layout
 
+local siValue = function(val)
+	if val >= 1e6 then
+		return ('%.1f'):format(val / 1e6):gsub('%.', 'm')
+	elseif val >= 1e4 then
+		return ("%.1f"):format(val / 1e3):gsub('%.', 'k')
+	else
+		return val
+	end
+end
+
 local Lolzen = CreateFrame("Frame")
 Lolzen:SetSize(250, 80)
 Lolzen:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -90, 16) --CHANGE LATER
@@ -31,18 +41,16 @@ end)
 -- Script for fake-scrolling
 local viewrange = 1
 Lolzen:SetScript("OnMouseWheel", function(self, direction)
-	if IsAltKeyDown() then
-		if direction == 1 then -- "up"
-			if viewrange > 1 then
-				viewrange = viewrange - 1
-			end
-		elseif direction == -1 then -- "down"
-			if viewrange < 21 then
-				viewrange = viewrange + 1
-			end
+	if direction == 1 then -- "up"
+		if viewrange > 1 then
+			viewrange = viewrange - 1
 		end
-		StyleMeter.UpdateLayout()
+	elseif direction == -1 then -- "down"
+		if viewrange < #StyleMeter.DB.rank then
+			viewrange = viewrange + 1
+		end
 	end
+	StyleMeter.UpdateLayout()
 end)
 
 -- Background
@@ -168,15 +176,24 @@ for i=1, 5, 1 do
 	end
 
 	sb[i]:SetScript("OnEnter", function(self)
-		if sb[i].content[1] ~= nil then
+		local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]
+		if curModeVal and curModeVal > 0 then
+			local sortedSpells = {}
+			-- Sort Spells & Abilities by active mode, so they aren't getting displayed funny
 			GameTooltip:SetOwner(sb[i], "ANCHOR_TOPLEFT", 0, 0)
-			GameTooltip:AddDoubleLine(sb[i].content[1], sb[i].content[2], 1, 1, 1, 1, 1, 1)
-			GameTooltip:AddDoubleLine("Total", sb[i].content[3] or "")
-			GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", sb[i].content[4])
+			GameTooltip:AddDoubleLine(StyleMeter.DB.rank[viewrange + i - 1], StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].class, 1, 1, 1, 1, 1, 1)
+			GameTooltip:AddDoubleLine("Total", curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)" or "", 85/255, 153/255, 255/255, 1, 1, 1)
+			GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].combatTime),85/255, 153/255, 255/255, 1, 1, 1)
 			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Spells/Abilities used", 1, 1, 1)
+			GameTooltip:AddLine("Spells/Abilities used", 85/255, 153/255, 255/255)
 			for k, v in pairs(StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]) do
-				GameTooltip:AddDoubleLine(k, v..format(" (%.0f%%)", v / (StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]) * 100))
+				-- Instert spellnames to sortedSpells
+				tinsert(sortedSpells, k)
+				-- Sort the spells
+				sort(sortedSpells, function(a, b) return StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]][a] > StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]][b] end)
+			end
+			for _, v in pairs(sortedSpells) do
+				GameTooltip:AddDoubleLine(v, StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]][v]..format(" (%.0f%%)", StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]][v] / (StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]) * 100), 1, 1, 1, 1, 1, 1)
 			end
 			GameTooltip:Show()
 		end
@@ -204,16 +221,6 @@ for i=1, 5, 1 do
 	sb[i]:SetScript("OnMouseUp", function()
 		Lolzen:StopMovingOrSizing()
 	end)
-end
-
-local siValue = function(val)
-	if val >= 1e6 then
-		return ('%.1f'):format(val / 1e6):gsub('%.', 'm')
-	elseif val >= 1e4 then
-		return ("%.1f"):format(val / 1e3):gsub('%.', 'k')
-	else
-		return val
-	end
 end
 
 --//#Functions called by core#//--
@@ -266,41 +273,18 @@ end
 
 function StyleMeter.UpdateLayout()
 	for i=1, 5, 1 do
-		if StyleMeter.moduleDBtotal[StyleMeter.activeModule] and StyleMeter.moduleDBtotal[StyleMeter.activeModule] > 0 then
-			local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] or 0
-			if curModeVal and curModeVal > 0 then
-				--Statusbars
-				sb[i].content = {
-					--sb[i].content1 = name
-					StyleMeter.DB.rank[viewrange + i - 1],
-					--sb[i].content2 = class
-					StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].class,
-					--sb[i].content3 = value dependent on StyleMeter.activeModule
-					curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)",
-					--sb[i].content4 = <module>/per second
-					--siValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] / StyleMeter.totalCombatTime)
-					siValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] / StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].combatTime)
-				}
-				if sb[i]:GetAlpha() == 0 then
-					sb[i]:SetAlpha(1)
-				end
-				sb[i]:SetMinMaxValues(0, StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[1]] or 0)
-				sb[i]:SetValue(StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]] or 0)
-				-- Strings
-				sb[i].string2:SetFormattedText("%s (%.0f%%)", siValue(curModeVal), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100)
-				sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.r*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.g*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.b*255, StyleMeter.DB.rank[viewrange + i - 1])
-				sb[i].border:Show()
-				sb[i].bg:Show()
-			else
-				if sb[i]:GetAlpha() == 1 then
-					sb[i]:SetAlpha(0)
-					sb[i].string1:SetText(nil)
-					sb[i].string2:SetText(nil)
-					sb[i].border:Hide()
-					sb[i].bg:Hide()
-					sb[i].content = {}
-				end
+		local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]
+		if curModeVal and curModeVal > 0 then
+			if sb[i]:GetAlpha() == 0 then
+				sb[i]:SetAlpha(1)
 			end
+			sb[i]:SetMinMaxValues(0, StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[1]] or 0)
+			sb[i]:SetValue(curModeVal)
+			-- Strings
+			sb[i].string2:SetFormattedText("%s (%.0f%%)", siValue(curModeVal), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100)
+			sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.r*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.g*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.b*255, StyleMeter.DB.rank[viewrange + i - 1])
+			sb[i].border:Show()
+			sb[i].bg:Show()
 		else
 			if sb[i]:GetAlpha() == 1 then
 				sb[i]:SetAlpha(0)
