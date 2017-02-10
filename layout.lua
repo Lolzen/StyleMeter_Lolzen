@@ -1,15 +1,5 @@
 --// Layout (Tabbed) //--
--- Sample layout: basic tabbed layout
-
-local siValue = function(val)
-	if val >= 1e6 then
-		return ('%.1f'):format(val / 1e6):gsub('%.', 'm')
-	elseif val >= 1e4 then
-		return ("%.1f"):format(val / 1e3):gsub('%.', 'k')
-	else
-		return val
-	end
-end
+-- Reference layout: basic tabbed layout
 
 local Lolzen = CreateFrame("Frame")
 Lolzen:SetSize(250, 80)
@@ -183,7 +173,7 @@ for i=1, 5, 1 do
 			GameTooltip:SetOwner(sb[i], "ANCHOR_TOPLEFT", 0, 0)
 			GameTooltip:AddDoubleLine(StyleMeter.DB.rank[viewrange + i - 1], StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].class, 1, 1, 1, 1, 1, 1)
 			GameTooltip:AddDoubleLine("Total", curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)" or "", 85/255, 153/255, 255/255, 1, 1, 1)
-			GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].combatTime),85/255, 153/255, 255/255, 1, 1, 1)
+			GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].combatTime),85/255, 153/255, 255/255, 1, 1, 1)
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Spells/Abilities used", 85/255, 153/255, 255/255)
 			for k, v in pairs(StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]) do
@@ -216,6 +206,11 @@ for i=1, 5, 1 do
 				StyleMeter.UpdateLayout()
 				print("|cff5599ffStyleMeter:|r Data has been reset.")
 			end
+		end
+		-- Reporting data from context menu
+		if button == "RightButton" then
+			ToggleDropDownMenu(1, nil, StyleMeter.Lolzen_DropDownMenu, sb[i], 0, 0)
+			StyleMeter.clicked = i
 		end
 	end)
 	sb[i]:SetScript("OnMouseUp", function()
@@ -281,7 +276,7 @@ function StyleMeter.UpdateLayout()
 			sb[i]:SetMinMaxValues(0, StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[1]] or 0)
 			sb[i]:SetValue(curModeVal)
 			-- Strings
-			sb[i].string2:SetFormattedText("%s (%.0f%%)", siValue(curModeVal), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100)
+			sb[i].string2:SetFormattedText("%s (%.0f%%)", StyleMeter.siValue(curModeVal), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100)
 			sb[i].string1:SetFormattedText("%d.  |cff%02x%02x%02x%s|r", viewrange + i - 1, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.r*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.g*255, StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].classcolor.b*255, StyleMeter.DB.rank[viewrange + i - 1])
 			sb[i].border:Show()
 			sb[i].bg:Show()

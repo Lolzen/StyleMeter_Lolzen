@@ -6,3 +6,4 @@
 ## Dependencies: StyleMeter
 
 layout.lua
+contextmenu.lua
