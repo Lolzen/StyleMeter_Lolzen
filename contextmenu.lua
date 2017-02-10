@@ -41,7 +41,13 @@ StaticPopupDialogs["WHISPER_TO_REPORT_SPELLS"] = {
 				sort(sortedSpells, function(a, b) return StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][a] > StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][b] end)
 			end
 			for _, v in pairs(sortedSpells) do
-				SendChatMessage(v.." "..StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v].." "..format(" (%.0f%%)", StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v] / StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] * 100), "WHISPER", nil, text)
+				local link
+				if GetSpellLink(v) ~= nil then
+					link = GetSpellLink(v)
+				else
+					link = v
+				end
+				SendChatMessage(link.." "..StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v].." "..format(" (%.0f%%)", StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v] / StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] * 100), "WHISPER", nil, text)
 			end
 		end
 	end,
@@ -81,7 +87,13 @@ StyleMeter.Lolzen_DropDownMenu.report_spells = function(dropdownbutton, arg1)
 				sort(sortedSpells, function(a, b) return StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][a] > StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][b] end)
 			end
 			for _, v in pairs(sortedSpells) do
-				SendChatMessage(v.." "..StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v].." "..format(" (%.0f%%)", StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v] / StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] * 100), arg1, nil)
+				local link
+				if GetSpellLink(v) ~= nil then
+					link = GetSpellLink(v)
+				else
+					link = v
+				end
+				SendChatMessage(link.." "..StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v].." "..format(" (%.0f%%)", StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v] / StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] * 100), arg1, nil)
 			end
 		end
 		CloseDropDownMenus()
