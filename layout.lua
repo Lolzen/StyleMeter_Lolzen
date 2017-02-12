@@ -173,7 +173,7 @@ for i=1, 5, 1 do
 			GameTooltip:SetOwner(sb[i], "ANCHOR_TOPLEFT", 0, 0)
 			GameTooltip:AddDoubleLine(StyleMeter.DB.rank[viewrange + i - 1], StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].class, 1, 1, 1, 1, 1, 1)
 			GameTooltip:AddDoubleLine("Total", curModeVal.." ("..(curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100).."%)" or "", 85/255, 153/255, 255/255, 1, 1, 1)
-			GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]].combatTime),85/255, 153/255, 255/255, 1, 1, 1)
+			GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i - 1]][StyleMeter.activeModule].combatTime),85/255, 153/255, 255/255, 1, 1, 1)
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Spells/Abilities used", 85/255, 153/255, 255/255)
 			for k, v in pairs(StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[viewrange + i - 1]]) do
@@ -243,7 +243,7 @@ function switchMode(mode)
 
 	-- Sort Statusbars by active mode, so they aren't getting displayed funny
 	if StyleMeter.moduleDB[StyleMeter.activeModule] then
-		sort(StyleMeter.DB.rank, StyleMeter.sortByModule)
+		sort(StyleMeter.DB.rank, function(a,b) return (StyleMeter.moduleDB[StyleMeter.activeModule][a] or 0) > (StyleMeter.moduleDB[StyleMeter.activeModule][b] or 0) end)
 	end
 
 	for i=1, 5, 1 do
@@ -294,6 +294,6 @@ function StyleMeter.UpdateLayout()
 
 	-- Sort Statusbars by active mode, so they aren't getting displayed funny
 	if StyleMeter.moduleDB[StyleMeter.activeModule] then
-		sort(StyleMeter.DB.rank, StyleMeter.sortByModule)
+		sort(StyleMeter.DB.rank, function(a,b) return (StyleMeter.moduleDB[StyleMeter.activeModule][a] or 0) > (StyleMeter.moduleDB[StyleMeter.activeModule][b] or 0) end)
 	end
 end
