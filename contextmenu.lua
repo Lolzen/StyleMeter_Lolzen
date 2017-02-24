@@ -15,7 +15,7 @@ StaticPopupDialogs["WHISPER_TO_REPORT"] = {
 		for i=1, 5, 1 do
 			local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]]
 			if i and StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]] then
-				SendChatMessage(string.format("%d. %s: %d (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], curModeVal, StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[i]].combatTime), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100, StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), "WHISPER", nil, text)
+				SendChatMessage(string.format("%d. %s: %d (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], curModeVal, StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[i]][StyleMeter.activeModule].combatTime), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100, StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), "WHISPER", nil, text)
 			end
 		end
 	end,
@@ -67,7 +67,7 @@ StyleMeter.Lolzen_DropDownMenu.report = function(dropdownbutton, arg1)
 		for i=1, 5, 1 do
 			local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]]
 			if i and StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]] then
-				SendChatMessage(string.format("%d. %s: %d (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], curModeVal, StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[i]].combatTime), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100, StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), arg1, nil)
+				SendChatMessage(string.format("%d. %s: %d (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], curModeVal, StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[i]][StyleMeter.activeModule].combatTime), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100, StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), arg1, nil)
 			end
 		end
 	end
@@ -100,23 +100,35 @@ StyleMeter.Lolzen_DropDownMenu.report_spells = function(dropdownbutton, arg1)
 	end
 end
 
+StyleMeter.Lolzen_DropDownMenu.switchMode = function(dropdownbutton, arg1)
+	StyleMeter.switchMode(arg1)
+	StyleMeter.UpdateLayout()
+	CloseDropDownMenus()
+end
+
 local info = {}
 StyleMeter.Lolzen_DropDownMenu.initialize = function(self, level)
 	if not level then return end
 	wipe(info)
 	if level == 1 then
+		info.text = "Mode (current: "..StyleMeter.activeModule..")"
+		info.notCheckable = 1
+		info.hasArrow = 1
+		info.value = "mode"
+		UIDropDownMenu_AddButton(info, level)
+
 		info.text = "Report to"
 		info.notCheckable = 1
 		info.hasArrow = 1
 		info.value = "reportto1"
 		UIDropDownMenu_AddButton(info, level)
-		
+
 		info.text = "Report spells used to"
 		info.notCheckable = 1
 		info.hasArrow = 1
 		info.value = "reportto2"
 		UIDropDownMenu_AddButton(info, level)
-		
+
 		info.text = "Cancel"
 		info.notCheckable = 1
 		info.hasArrow = false
@@ -125,7 +137,19 @@ StyleMeter.Lolzen_DropDownMenu.initialize = function(self, level)
 		UIDropDownMenu_AddButton(info, level)
 		
 	elseif level == 2 then 
-		if UIDROPDOWNMENU_MENU_VALUE == "reportto1" then
+		if UIDROPDOWNMENU_MENU_VALUE == "mode" then
+			for module in pairs(StyleMeter.module) do
+				info.text = module
+				if info.text == StyleMeter.activeModule then
+					info.checked = true
+				else
+					info.checked = false
+				end
+				info.func = self.switchMode
+				info.arg1 = module
+				UIDropDownMenu_AddButton(info, level)
+			end
+		elseif UIDROPDOWNMENU_MENU_VALUE == "reportto1" then
 			info.text = "Say"
 			info.notCheckable = 1
 			info.func = self.report
