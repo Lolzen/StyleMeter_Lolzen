@@ -1,5 +1,5 @@
---// Layout (Tabbed) //--
--- Reference layout: basic tabbed layout
+--// Layout //--
+-- Reference layout: basic layout
 
 local Lolzen = CreateFrame("Frame")
 Lolzen:SetSize(250, 80)
@@ -19,7 +19,7 @@ Lolzen:SetScript("OnMouseDown", function(self, button)
 		if button == "LeftButton" then
 			StyleMeter.resetData()
 			StyleMeter.UpdateLayout()
-			print("|cff5599ffStyleMeter:|r Data has been resetted.")
+			print("|cff5599ffStyleMeter:|r Data has been reset.")
 		end
 	end
 end)
@@ -58,57 +58,6 @@ border:SetBackdrop({
 border:SetPoint("TOPLEFT", bg, -2, 1)
 border:SetPoint("BOTTOMRIGHT", bg, 2, -1)
 border:SetBackdropBorderColor(0.2, 0.2, 0.2)
-
--- Copy Modulenames into modulenames table, ordering them in their set priority
-local modulenames = {}
-for k, v in pairs(StyleMeter.module) do
-	tinsert(modulenames, v.priority, k)
-end
-
--- Create some clickable tabs
-local tabs = {}
-for k, v in pairs(modulenames) do
-	-- Create the Tabs
-	if not tabs[k] then
-		tabs[k] = CreateFrame("Frame", v.."-Tab", Lolzen)
-		if k == 1 then
-			tabs[k]:SetPoint("TOPRIGHT", Lolzen, "TOPLEFT", -4, -1)
-		else
-			tabs[k]:SetPoint("TOP", tabs[k-1], "BOTTOM", 0, -3)
-		end
-		tabs[k]:SetSize(80, 12)
-	end
-	-- Backgrond
-	if not tabs[k].bg then
-		tabs[k].bg = tabs[k]:CreateTexture("Background")
-		tabs[k].bg:SetTexture("Interface\\Buttons\\WHITE8x8")
-		tabs[k].bg:SetAllPoints(tabs[k])
-	end
-	-- Labels
-	if not tabs[k].label then
-		tabs[k].label = tabs[k]:CreateFontString(nil, "OVERLAY")
-		tabs[k].label:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
-		tabs[k].label:SetPoint("CENTER", tabs[k], "CENTER", 0, 0)
-		tabs[k].label:SetFormattedText("%s", v)
-	end
-	-- Border
-	if not tabs[k].border then
-		tabs[k].border = CreateFrame("Frame", nil, Lolzen)
-		tabs[k].border:SetBackdrop({
-			edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\border", edgeSize = 8,
-			insets = {left = 4, right = 4, top = 4, bottom = 4},
-		})
-		tabs[k].border:SetBackdropBorderColor(0.2, 0.2, 0.2)
-		tabs[k].border:SetPoint("TOPLEFT", tabs[k], -2, 1)
-		tabs[k].border:SetPoint("BOTTOMRIGHT", tabs[k], 2, -1)
-		tabs[k].border:SetAlpha(1)
-	end
-	-- clickscript for switching
-	tabs[k]:SetScript("OnMouseDown", function(self, button)
-		switchMode(v)
-		StyleMeter.UpdateLayout()
-	end)
-end
 
 -- Create the Statusbars
 local sb = {}
@@ -228,17 +177,9 @@ function StyleMeter.layoutSpecificReset()
 	end
 end
 
-function switchMode(mode)
+function StyleMeter.switchMode(mode)
 	if mode ~= nil then
 		StyleMeter.activeModule = mode
-	end
-
-	for k, v in pairs(modulenames) do
-		if v == StyleMeter.activeModule then
-			tabs[k].bg:SetVertexColor(0.5, 0, 0, 0.5)
-		else
-			tabs[k].bg:SetVertexColor(0, 0, 0, 0.5)
-		end
 	end
 
 	-- Sort Statusbars by active mode, so they aren't getting displayed funny
@@ -262,8 +203,9 @@ function switchMode(mode)
 end
 
 function StyleMeter.UpdateLogin()
-	-- Update on login and select the module with priority 1
-	switchMode(modulenames[1])
+	-- Update on login and select Damage as teh Standard mode
+	-- TODO: make this worked with saved vars, so next time it'll be the last set mode
+	StyleMeter.switchMode("Damage")
 end
 
 function StyleMeter.UpdateLayout()
