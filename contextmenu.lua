@@ -3,58 +3,103 @@
 StyleMeter.Lolzen_DropDownMenu = CreateFrame("Frame", "Lolzen_DropDownMenu")
 StyleMeter.Lolzen_DropDownMenu.displayMode = "MENU"
 
+-- Modify the Background & Border textures/colors
+local LolzenBackdrop = {
+	edgeFile = "Interface\\AddOns\\StyleMeter_Lolzen\\Textures\\borderwhite", edgeSize = 12,
+	bgFile = "Interface\\Buttons\\WHITE8x8",
+	insets = {left = 2, right = 2, top = 2, bottom = 2},
+}
+
+hooksecurefunc("ToggleDropDownMenu", function(level, ...)
+	if not level then
+		level = 1
+	end
+	local menu1 = _G["DropDownList"..level.."Backdrop"]
+	local menu2 = _G["DropDownList"..level.."MenuBackdrop"]
+	if menu1 then
+		menu1:SetBackdrop(LolzenBackdrop)
+		menu1:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)
+		menu1:SetBackdropColor(0, 0, 0, 1)
+	end
+	if menu2 then
+		menu2:SetBackdrop(LolzenBackdrop)
+		menu2:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)
+		menu2:SetBackdropColor(0, 0, 0, 1)
+	end
+end)
+
+local ReportDataWhisperFunc = function(self)
+	local text = self.editBox:GetText()
+	SendChatMessage("StyleMeter report for : ["..StyleMeter.activeModule.."]", "WHISPER", nil, text)
+	for i=1, 5, 1 do
+		local curModeVal, curModeTotal = StyleMeter.getModeData(i)
+		local curModeCombatTime = StyleMeter.getTimeAndSpells(i)
+		if i and curModeVal then
+			SendChatMessage(string.format("%d. %s: %s (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], tostring(curModeVal), tostring(StyleMeter.siValue(curModeVal / curModeCombatTime)), tostring(curModeVal / curModeTotal * 100), StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), "WHISPER", nil, text)
+		end
+	end
+end
+
 --Create a Popupdialogs for whispering
 StaticPopupDialogs["WHISPER_TO_REPORT"] = {
 	text = "Whisper to",
 	button1 = "OK",
 	button2 = "Cancel",
 	hasEditBox = true,
-	OnAccept = function(self, data)
-		local text = self.editBox:GetText()
-		SendChatMessage("StyleMeter report for : ["..StyleMeter.activeModule.."]", "WHISPER", nil, text)
-		for i=1, 5, 1 do
-			local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]]
-			if i and StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]] then
-				SendChatMessage(string.format("%d. %s: %d (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], curModeVal, StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[i]][StyleMeter.activeModule].combatTime), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100, StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), "WHISPER", nil, text)
-			end
-		end
+	OnAccept = function(self)
+		ReportDataWhisperFunc(self)
+	end,
+	EditBoxOnEnterPressed = function(self)
+		local parent = self:GetParent()
+		ReportDataWhisperFunc(parent)
+		parent:Hide()
+	end,
+	EditBoxOnEscapePressed = function(self)
+		local parent = self:GetParent()
+		parent:Hide()
 	end,
 	timeout = 0,
 	whileDead = true,
-	hideOnEscape = true,
-	enterClicksFirstButton = true,
 	preferredIndex = 3,  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
 }
+
+local WhisperToSpellsFunc = function(self)
+	local text = self.editBox:GetText()
+	local sortedSpells = {}
+	local spells = StyleMeter.data.overall[StyleMeter.DB.rank[StyleMeter.clicked]][StyleMeter.activeModule].spells
+	if spells then
+		SendChatMessage("StyleMeter report for : [Spells used in "..StyleMeter.activeModule.."] from ["..StyleMeter.DB.rank[StyleMeter.clicked].."]", "WHISPER", nil, text)
+		for k, v in pairs(spells) do
+			if not sortedSpells[k] then
+				tinsert(sortedSpells, k)
+				sort(sortedSpells, function(a, b) return spells[a].amount > spells[b].amount end)
+			end
+		end
+		for _, v in pairs(sortedSpells) do
+			SendChatMessage(v.." "..spells[v].amount.." "..format(" (%.0f%%)", spells[v].amount / StyleMeter.data.overall[StyleMeter.DB.rank[StyleMeter.clicked]][StyleMeter.activeModule].total * 100), "WHISPER", nil, text)
+		end
+	end
+end
 
 StaticPopupDialogs["WHISPER_TO_REPORT_SPELLS"] = {
 	text = "Whisper spells used to",
 	button1 = "OK",
 	button2 = "Cancel",
 	hasEditBox = true,
-	OnAccept = function(self, data)
-		local text = self.editBox:GetText()
-		local sortedSpells = {}
-		if StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] then
-			SendChatMessage("StyleMeter report for : [Spells used in "..StyleMeter.activeModule.."] from ["..StyleMeter.DB.rank[StyleMeter.clicked].."]", "WHISPER", nil, text)
-			for k, v in pairs(StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]]) do
-				tinsert(sortedSpells, k)
-				sort(sortedSpells, function(a, b) return StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][a] > StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][b] end)
-			end
-			for _, v in pairs(sortedSpells) do
-				local link
-				if GetSpellLink(v) ~= nil then
-					link = GetSpellLink(v)
-				else
-					link = v
-				end
-				SendChatMessage(link.." "..StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v].." "..format(" (%.0f%%)", StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v] / StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] * 100), "WHISPER", nil, text)
-			end
-		end
+	OnAccept = function(self)
+		WhisperToSpellsFunc(self)
+	end,
+	EditBoxOnEnterPressed = function(self)
+		local parent = self:GetParent()
+		WhisperToSpellsFunc(parent)
+		parent:Hide()
+	end,
+	EditBoxOnEscapePressed = function(self)
+		local parent = self:GetParent()
+		parent:Hide()
 	end,
 	timeout = 0,
 	whileDead = true,
-	hideOnEscape = true,
-	enterClicksFirstButton = true,
 	preferredIndex = 3,  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
 }
 
@@ -65,9 +110,10 @@ StyleMeter.Lolzen_DropDownMenu.report = function(dropdownbutton, arg1)
 	else
 		SendChatMessage("StyleMeter report for : ["..StyleMeter.activeModule.."]", arg1, nil)
 		for i=1, 5, 1 do
-			local curModeVal = StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]]
-			if i and StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[i]] then
-				SendChatMessage(string.format("%d. %s: %d (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], curModeVal, StyleMeter.siValue(curModeVal / StyleMeter.DB.players[StyleMeter.DB.rank[i]][StyleMeter.activeModule].combatTime), curModeVal / StyleMeter.moduleDBtotal[StyleMeter.activeModule] * 100, StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), arg1, nil)
+			local curModeVal, curModeTotal = StyleMeter.getModeData(i)
+			local curModeCombatTime = StyleMeter.getTimeAndSpells(i)
+			if i and curModeVal then
+				SendChatMessage(string.format("%d. %s: %s (%s, %.0f%%) [%s]", i, StyleMeter.DB.rank[i], tostring(curModeVal), tostring(StyleMeter.siValue(curModeVal / curModeCombatTime)), tostring(curModeVal / curModeTotal * 100), StyleMeter.DB.players[StyleMeter.DB.rank[i]].class), arg1, nil)
 			end
 		end
 	end
@@ -80,27 +126,32 @@ StyleMeter.Lolzen_DropDownMenu.report_spells = function(dropdownbutton, arg1)
 		CloseDropDownMenus()
 	else
 		local sortedSpells = {}
-		if StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] then
+		local spells = StyleMeter.data.overall[StyleMeter.DB.rank[StyleMeter.clicked]][StyleMeter.activeModule].spells
+		if spells then
 			SendChatMessage("StyleMeter report for : [Spells used in "..StyleMeter.activeModule.."] from ["..StyleMeter.DB.rank[StyleMeter.clicked].."]", arg1, nil)
-			for k, v in pairs(StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]]) do
-				tinsert(sortedSpells, k)
-				sort(sortedSpells, function(a, b) return StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][a] > StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][b] end)
+			for k, v in pairs(spells) do
+				if not sortedSpells[k] then
+					tinsert(sortedSpells, k)
+				end
+				sort(sortedSpells, function(a, b) return spells[a].amount > spells[b].amount end)
 			end
 			for _, v in pairs(sortedSpells) do
-				local link
-				if GetSpellLink(v) ~= nil then
-					link = GetSpellLink(v)
-				else
-					link = v
-				end
-				SendChatMessage(link.." "..StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v].." "..format(" (%.0f%%)", StyleMeter.DB.spells[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]][v] / StyleMeter.moduleDB[StyleMeter.activeModule][StyleMeter.DB.rank[StyleMeter.clicked]] * 100), arg1, nil)
+				SendChatMessage(v.." "..spells[v].amount.." "..format(" (%.0f%%)", spells[v].amount / StyleMeter.data.overall[StyleMeter.DB.rank[StyleMeter.clicked]][StyleMeter.activeModule].total * 100), arg1, nil)
 			end
 		end
 		CloseDropDownMenus()
 	end
 end
 
+StyleMeter.Lolzen_DropDownMenu.switchModule = function(dropdownbutton, arg1)
+	StyleMetercfg.displaymodule = arg1
+	StyleMeter.switchModule(arg1)
+	StyleMeter.UpdateLayout()
+	CloseDropDownMenus()
+end
+
 StyleMeter.Lolzen_DropDownMenu.switchMode = function(dropdownbutton, arg1)
+	StyleMetercfg.displaymode = arg1
 	StyleMeter.switchMode(arg1)
 	StyleMeter.UpdateLayout()
 	CloseDropDownMenus()
@@ -111,7 +162,13 @@ StyleMeter.Lolzen_DropDownMenu.initialize = function(self, level)
 	if not level then return end
 	wipe(info)
 	if level == 1 then
-		info.text = "Mode (current: "..StyleMeter.activeModule..")"
+		info.text = "Module (current: "..StyleMeter.activeModule..")"
+		info.notCheckable = 1
+		info.hasArrow = 1
+		info.value = "module"
+		UIDropDownMenu_AddButton(info, level)
+		
+		info.text = "Display Mode (current: "..StyleMeter.activeMode..")"
 		info.notCheckable = 1
 		info.hasArrow = 1
 		info.value = "mode"
@@ -123,11 +180,13 @@ StyleMeter.Lolzen_DropDownMenu.initialize = function(self, level)
 		info.value = "reportto1"
 		UIDropDownMenu_AddButton(info, level)
 
-		info.text = "Report spells used to"
-		info.notCheckable = 1
-		info.hasArrow = 1
-		info.value = "reportto2"
-		UIDropDownMenu_AddButton(info, level)
+		if StyleMeter.clicked ~= 0 then
+			info.text = "Report spells used to"
+			info.notCheckable = 1
+			info.hasArrow = 1
+			info.value = "reportto2"
+			UIDropDownMenu_AddButton(info, level)
+		end
 
 		info.text = "Cancel"
 		info.notCheckable = 1
@@ -137,7 +196,7 @@ StyleMeter.Lolzen_DropDownMenu.initialize = function(self, level)
 		UIDropDownMenu_AddButton(info, level)
 		
 	elseif level == 2 then 
-		if UIDROPDOWNMENU_MENU_VALUE == "mode" then
+		if UIDROPDOWNMENU_MENU_VALUE == "module" then
 			for module in pairs(StyleMeter.module) do
 				info.text = module
 				if info.text == StyleMeter.activeModule then
@@ -145,8 +204,20 @@ StyleMeter.Lolzen_DropDownMenu.initialize = function(self, level)
 				else
 					info.checked = false
 				end
-				info.func = self.switchMode
+				info.func = self.switchModule
 				info.arg1 = module
+				UIDropDownMenu_AddButton(info, level)
+			end
+		elseif UIDROPDOWNMENU_MENU_VALUE == "mode" then
+			for _, mode in pairs({"Current", "Overall", "Hybrid"}) do
+				info.text = mode
+				if info.text == StyleMeter.activeMode then
+					info.checked = true
+				else
+					info.checked = false
+				end
+				info.func = self.switchMode
+				info.arg1 = mode
 				UIDropDownMenu_AddButton(info, level)
 			end
 		elseif UIDROPDOWNMENU_MENU_VALUE == "reportto1" then
