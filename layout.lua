@@ -49,7 +49,6 @@ Lolzen:SetScript("OnMouseWheel", function(self, direction)
 			viewrange = viewrange - 1
 		end
 	elseif direction == -1 then -- "down"
-	--	print(#StyleMeter.DB.rank)
 		if viewrange +5 < #StyleMeter.DB.rank then
 			viewrange = viewrange + 1
 		end
@@ -113,13 +112,13 @@ for i=1, 5, 1 do
 	if not sb[i].string1 then
 		-- #. Name
 		sb[i].string1 = sb[i]:CreateFontString(nil, "OVERLAY")
-		sb[i].string1:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+		sb[i].string1:SetFont("Interface\\AddOns\\StyleMeter_Lolzen\\fonts\\DroidSans.ttf", 12, "OUTLINE")
 		sb[i].string1:SetPoint("TOPLEFT", sb[i], "TOPLEFT", 2, -0.5)
 	end
 	if not sb[i].string2 then
 		-- modevalue (modevalue%)
 		sb[i].string2 = sb[i]:CreateFontString(nil, "OVERLAY")
-		sb[i].string2:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+		sb[i].string2:SetFont("Interface\\AddOns\\StyleMeter_Lolzen\\fonts\\DroidSans.ttf", 12, "OUTLINE")
 		sb[i].string2:SetPoint("TOPRIGHT", sb[i], "TOPRIGHT", -2, -0.5)
 	end
 
@@ -132,7 +131,7 @@ for i=1, 5, 1 do
 			GameTooltip:AddDoubleLine(StyleMeter.DB.rank[viewrange + i], StyleMeter.DB.players[StyleMeter.DB.rank[viewrange + i]].class, 1, 1, 1, 1, 1, 1)
 			GameTooltip:AddDoubleLine("Total", curModeVal.." ("..(curModeVal / curModeTotal * 100).."%)" or "", 85/255, 153/255, 255/255, 1, 1, 1)
 			if not StyleMeter.module[StyleMeter.activeModule].limitdata == true then
-				GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", StyleMeter.siValue(curModeVal / curModeCombatTime),85/255, 153/255, 255/255, 1, 1, 1)
+				GameTooltip:AddDoubleLine(StyleMeter.activeModule.." per Second:", StyleMeter.siValue(curModeVal / curModeCombatTime), 85/255, 153/255, 255/255, 1, 1, 1)
 				GameTooltip:AddLine(" ")
 				GameTooltip:AddLine("Spells/Abilities used", 85/255, 153/255, 255/255)
 				for k, v in pairs(curModeSpells) do
