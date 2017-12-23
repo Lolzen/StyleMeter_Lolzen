@@ -72,6 +72,48 @@ border:SetPoint("TOPLEFT", bg, -2, 1)
 border:SetPoint("BOTTOMRIGHT", bg, 2, -1)
 border:SetBackdropBorderColor(0.2, 0.2, 0.2)
 
+-- Color table for spellSchool colors
+-- all colors, except physical taken from https://wow.gamepedia.com/COMBAT_LOG_EVENT
+-- physical uses plain white instead of yellow
+-- colors mixed with http://www.colorhexa.com/
+-- and converted to rgb using "rgb to hex" in google
+local spellSchoolColors = {
+	[1] = {r=255, g=255, b=255}, --Physical #FFFFFF, rgb(255, 255, 255)
+	[2] = {r=255, g=230, b=128}, --Holy #FFE680, rgb(255, 230, 128)
+	[4] = {r=255, g=128, b=0}, --Fire #FF8000, rgb(255, 128, 0)
+	[8] = {r=77, g=255, b=77}, --Nature #4DFF4D, rgb(77, 255, 77)
+	[16] = {r=128, g=255, b=255}, --Frost #80FFFF, rgb(128, 255, 255)
+	[32] = {r=128, g=128, b=255}, --Shadow #8080FF, rgb(128, 128, 255)
+	[64] = {r=255, g=128, b=255}, --Arcane #FF80FF, rgb(255, 128, 255)
+	-- to be done; custom colors for double schools
+	[3] = {r=255, g=243, b=192}, --Holy + Physical #FFF3C0, rgb(255, 243, 192)
+	[5] = {r=255, g=192, b=128}, --Fire + Physical #FFC080, rgb(255, 192, 128)
+	[6] = {r=255, g=179, b=64}, --Fire + Holy #FFB340, rgb(255, 179, 64)
+	[9] = {r=166, g=255, b=166}, --Nature + Physical #A6FFA6, rgb(166, 255, 166)
+	[10] = {r=166, g=243, b=103}, --Nature + Holy #A6F367, rgb(166, 243, 103)
+	[12] = {r=166, g=192, b=39}, --Nature + Fire #A6C027, rgb(166, 192, 39)
+	[17] = {r=192, g=255, b=255}, --Frost + Physical #C0FFFF, rgb(192, 255, 255)
+	[18] = {r=192, g=243, b=192}, --Frost + Holy #C0F3C0, rgb(192, 243, 192)
+	[20] = {r=192, g=192, b=128}, --Frost + Fire #C0C080, rgb(192, 192, 128)
+	[24] = {r=103, g=255, b=166}, --Frost + Nature #67FFA6, rgb(103, 255, 166)
+	[33] = {r=192, g=192, b=255}, --Shadow + Physical #C0C0FF, rgb(192, 192, 255)
+	[34] = {r=192, g=179, b=192}, --Shadow + Holy #C0B3C0, rgb(192, 179, 192)
+	[36] = {r=192, g=128, b=128}, --Shadow + Fire #C08080, rgb(192, 128, 128)
+	[40] = {r=103, g=192, b=166}, --Shadow + Nature #67C0A6, rgb(103, 192, 166)
+	[48] = {r=128, g=192, b=255}, --Shadow + Frost #80C0FF, rgb(128, 192, 255)
+	[65] = {r=255, g=192, b=255}, --Arcane + Physical #FFC0FF,rgb(255, 192, 255)
+	[66] = {r=255, g=179, b=192}, --Arcane + Holy #FFB3C0, rgb(255, 179, 192)
+	[68] = {r=255, g=128, b=128}, --Arcane + Fire #FF8080, rgb(255, 128, 128)
+	[72] = {r=166, g=192, b=166}, --Arcane + Nature #A6C0A6, rgb(166, 192, 166)
+	[80] = {r=192, g=192, b=255}, --Arcane + Frost #C0C0FF, rgb(192, 192, 255)
+	[96] = {r=192, g=128, b=255}, --Arcane + Shadow #C080FF, rgb(192, 128, 255)
+	-- tripple or more schools
+	[28] = {r=153, g=213, b=111}, --Frost + Nature + Fire #99D56F, rgb(153, 213, 111)
+	[124] = {r=169, g=179, b=169}, --Arcane + Shadow + Frost + Nature + Fire #A9B3A8, rgb(169, 179, 168)
+	[126] = {r=183, g=187, b=162}, --Arcane + Shadow + Frost + Nature + Fire + Holy #B7BBA2, rgb(183, 187, 162)
+	[127] = {r=193, g=197, b=175}, --Arcane + Shadow + Frost + Nature + Fire + Holy + Physical #C1C5AF, rgb(193, 197, 175)
+}
+
 -- Create the Statusbars
 local sb = {}
 for i=1, 5, 1 do
@@ -143,7 +185,7 @@ for i=1, 5, 1 do
 					sort(sortedSpells, function(a, b) return curModeSpells[a].amount > curModeSpells[b].amount end)
 				end
 				for _, v in pairs(sortedSpells) do
-					GameTooltip:AddDoubleLine(v, curModeSpells[v].amount..format(" (%.0f%%)", curModeSpells[v].amount / curModeVal * 100), 1, 1, 1, 1, 1, 1)
+					GameTooltip:AddDoubleLine(format("|cff%02x%02x%02x%s|r", spellSchoolColors[curModeSpells[v].spellSchool].r, spellSchoolColors[curModeSpells[v].spellSchool].g, spellSchoolColors[curModeSpells[v].spellSchool].b, v), curModeSpells[v].amount..format(" (%.0f%%)", curModeSpells[v].amount / curModeVal * 100), 1, 1, 1, 1, 1, 1)
 				end
 			end
 			GameTooltip:Show()
