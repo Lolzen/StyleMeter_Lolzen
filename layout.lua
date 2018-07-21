@@ -44,13 +44,26 @@ end)
 -- Script for fake-scrolling
 local viewrange = 0
 Lolzen:SetScript("OnMouseWheel", function(self, direction)
-	if direction == 1 then -- "up"
-		if viewrange > 0 then
-			viewrange = viewrange - 1
+	if IsShiftKeyDown() then
+		if direction == 1 then -- "up"
+		--	if viewrange > 0 then
+				viewrange = 0
+		--	end
+		elseif direction == -1 then -- "down"
+		--	if viewrange +5 < #StyleMeter.DB.rank then
+			if #StyleMeter.DB.rank > 6 then
+				viewrange = #StyleMeter.DB.rank - 5
+			end
 		end
-	elseif direction == -1 then -- "down"
-		if viewrange +5 < #StyleMeter.DB.rank then
-			viewrange = viewrange + 1
+	else
+		if direction == 1 then -- "up"
+			if viewrange > 0 then
+				viewrange = viewrange - 1
+			end
+		elseif direction == -1 then -- "down"
+			if viewrange +5 < #StyleMeter.DB.rank then
+				viewrange = viewrange + 1
+			end
 		end
 	end
 	StyleMeter.UpdateLayout()
